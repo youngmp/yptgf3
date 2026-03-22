@@ -1,0 +1,13 @@
+# numerical continuation of Fokker-Planck from master equation
+
+p A=5,B=5.1,be=126,al=14,nd=100,nu=100,ze=1,k=1.288
+
+y=al/(al+be)
+v(x,yy)=A*(yy*nu-x*nd)/(x*nd/be+yy*nu/be+ze/k)
+
+f(x)=(1-x)*al-be*x/(1-exp(be*(A-B)/abs(v(x,y))))
+
+x'=f(x)
+
+aux faux=f(t)
+aux vel=v(x,y)
