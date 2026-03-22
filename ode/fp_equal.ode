@@ -1,0 +1,27 @@
+# fokker-planck. get steady states.
+# assume x=y to get center peak
+
+p ze=3.1,n=100,a=5,b=5.04,al=14,be=126,k=1.288
+
+coth(x)=cosh(x)/sinh(x)
+
+fd1(y)=(-1 + y)*al + (y*be*(1 + Coth(((A - B)*be*(k*y + be*ze))/((A - B)*be*(2*k*y + be*ze) + Sqrt((A - B)**2*be**2*(2*k*y + be*ze)**2)))))/2
+#fd1b(y)=(-1 + y)*al + (y*be*(1 + Coth(((A - B)*be*(k*y + be*ze))/((A - B)*be*(2*k*y + be*ze) - Sqrt((A - B)**2*be**2*(2*k*y + be*ze)**2)))))/2
+
+fd2(y)=(-1 + y)*al - (y*be)/(-1 + exp((-2*(A - B)*be*(k*y + be*ze))/((A - B)*be*(2*k*y + be*ze) - Sqrt((A - B)**2*be**2*(2*k*y + be*ze)**2))))
+fu1(y)=(-1 + y)*al - (y*be)/(-1 + exp((2*(A - B)*be*(k*y + be*ze))/((A - B)*be*(2*k*y + be*ze) - Sqrt((A - B)**2*be**2*(2*k*y + be*ze)**2))))
+fu2(y)=(-1 + y)*al - (y*be)/(-1 + exp((2*(A - B)*be*(k*y + be*ze))/((A - B)*be*(2*k*y + be*ze) + Sqrt((A - B)**2*be**2*(2*k*y + be*ze)**2))))
+
+#y'=fd1(y)
+#y1'=fd1b(y1)
+
+y1'=-fd2(y1)-fu2(y1)
+#y1'=-fd2(y1)
+#y2'=fu1(y2)
+#y3'=-fu2(y3)
+
+#@ xp=x,yp1=y1,yp2=y2,yp3=y3
+#@ nplot=3
+@ nplot=1
+#@ xlo=0,xhi=11,ylo=0,yhi=11
+@ total=1,dt=.001
