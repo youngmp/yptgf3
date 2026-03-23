@@ -202,10 +202,11 @@ def load_local_idxs(pars,recompute=True):
             
     
 
-def get_local_idxs(mat,p):
+def get_local_idxs(mat,p,tol=1e-3):
     """
     returns 1, 2, or 3 pairs.
-    p: object
+    p: object for parameters
+    tol: ignore peaks 
     """
 
     # get local max idxs
@@ -228,8 +229,9 @@ def get_local_idxs(mat,p):
             is_row_max = False
             is_col_max = False
             
+            # save diagonal peak if above 1e-4
             if np.allclose(row_max[i][1],col_max[j][1]) and\
-               col_max[j][1] > 1e-3 and\
+               col_max[j][1] > 1e-4 and\
                row_max[i][0] == j:
 
                 # make sure given row/col is local max in
@@ -281,7 +283,7 @@ def get_local_idxs(mat,p):
         # check if there are two peaks with i==j.
         # if so, remove one.
 
-        # get indices of peaks with equal numbers of indices. 
+        # get indices of peaks with equal  indices in x and y (peaks on diagonal). 
         equal_idxs = np.where((x_idxs-y_idxs)==0)[0]
 
         bad_idxs = x_idxs[equal_idxs]
@@ -419,7 +421,7 @@ def get_peaks(mat,x_idxs,y_idxs,pref='master'):
 
     if len(x_idxs) == 3: # separate
         x_idxs1,y_idxs1,x_idxs2,y_idxs2 = sep(x_idxs,y_idxs)
-    
+        #print(x_idxs1,y_idxs1,x_idxs2,y_idxs2)
     
     peaks = np.empty(3);peaks[:] = np.nan
     peak_idxs = np.empty((3,2));peak_idxs[:,:] = np.nan
@@ -435,6 +437,7 @@ def get_peaks(mat,x_idxs,y_idxs,pref='master'):
         peak_idxs[2,0] = x_idxs[1];peak_idxs[2,1] = y_idxs[1]
         
     if len(x_idxs) == 3:
+        print(peaks,x_idxs1,y_idxs1)
         peaks[0] = mat[x_idxs2[0],y_idxs2[0]]
         peaks[1] = mat[x_idxs1[0],y_idxs1[0]]
         peaks[2] = mat[x_idxs2[1],y_idxs2[1]]
