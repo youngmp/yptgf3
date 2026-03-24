@@ -26,6 +26,7 @@ from multiprocessing import Pool
 from multiprocessing.shared_memory import SharedMemory
 from itertools import product
 
+import matplotlib.colors as colors
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, BoundaryNorm
 from matplotlib.ticker import MaxNLocator
@@ -203,15 +204,16 @@ def vel_fig():
     axs[1].set_title(t1)
     
     # colorbar nonsense
-    divider0 = make_axes_locatable(axs[0])
+    #divider0 = make_axes_locatable(axs[0])
     divider1 = make_axes_locatable(axs[1])
     
-    cax0 = divider0.append_axes("right", size="5%", pad=0.05)
+    #cax0 = divider0.append_axes("right", size="5%", pad=0.05)
     cax1 = divider1.append_axes("right", size="5%", pad=0.05)
-
     
-    fig.colorbar(im,cax=cax0)
-    fig.colorbar(im2,cax=cax1)
+    #fig.colorbar(im,cax=cax0)
+    cbar = fig.colorbar(im2,cax=cax1)
+    
+    cbar.ax.set_ylabel(r'\si{nm/s}')
     
     plt.tight_layout()
 
@@ -486,34 +488,28 @@ def steady_state_examples():
 
     axs[0].scatter(peak_idxs[1,0],peak_idxs[1,1],
                    zorder=2,color='tab:red',label='Peaks',
-                   marker='X',s=40)
+                   marker='X',s=60)
     axs[0].scatter(peak_idxs[2,0],peak_idxs[2,1],
                    zorder=2,color='tab:red',label='Peaks',
-                   marker='*',s=40)
+                   marker='*',s=60)
     axs[0].scatter([peak_idxs[0,0]],[peak_idxs[0,1]],zorder=2,color='tab:red',
-                   marker='D',s=40)
+                   marker='D',s=60)
 
-    _, peak_idxs_m = get_master_peak_idxs([ze],A=5,B=B,al=14,be=126)
+    #_, peak_idxs_m = get_master_peak_idxs([ze],A=5,B=B,al=14,be=126)
 
-    print(peak_idxs_m[0])
-    axs[1].scatter(peak_idxs_m[0][1],np.flipud(peak_idxs_m[0])[1],
+    #peak_idxs_m = [[[],[],[]]]
+
+    #print(peak_idxs_m[0]) # currently showing nan due to updates in peak detection
+    # insert points manually
+    axs[1].scatter([8],[8],
                    zorder=3,color='tab:red',label='Peaks',
-                   marker='X',s=40)
-    axs[1].scatter(peak_idxs_m[0][2],np.flipud(peak_idxs_m[0])[2],
+                   marker='X',s=60)
+    axs[1].scatter([10],[4],
                    zorder=3,color='tab:red',label='Peaks',
-                   marker='*',s=40)
-    axs[1].scatter([peak_idxs_m[0][0]],[peak_idxs_m[0][-1]],
+                   marker='*',s=60)
+    axs[1].scatter([4],[10],
                    zorder=3,color='tab:red',
-                   marker='D',s=40)
-    
-    
-    # mark agents peak
-    #pref = 'agents'
-    #fname3 = 'dat/'+pref+'_peak_idxs_A=5_B={}_al={}_be={}_ze={}.txt'
-    #peak_idxs = np.loadtxt(fname3.format(B,al,be,ze))
-    #print(peak_idxs[:,0])
-    #axs[0].scatter(
-
+                   marker='D',s=60)
 
     
     axs[0].set_xlim(0,2*n_eq)
@@ -541,11 +537,8 @@ def steady_state_examples():
         axs[i].plot([0,n_eq],[n_eq,n_eq],color='white',ls='--')
         axs[i].plot([n_eq,n_eq],[0,n_eq],color='white',ls='--')
         
-
-    
-
     #fig.colorbar(axs[0].images[0],ax=axs[0],fraction=0.046)
-    fig.colorbar(np.concatenate([axs[0].images[0],axs[1].images[0]]),ax=axs[1],fraction=0.046)
+    fig.colorbar(axs[1].images[0],ax=axs[1],fraction=0.046)
 
     #axs[0].legend(framealpha=1)
 
@@ -593,6 +586,9 @@ def steady_states():
 
     axs[1,0].plot(p1_b502[:idx,0],p1_b502[:idx,1],color='gray',label='F-P',lw=2)
     axs[1,0].plot(p1_b502[idx:,0],p1_b502[idx:,1],color='gray',ls='--',lw=2)
+
+    #axs[1,0].plot(p1_b502[:idx,0],p1_b502[:idx,2],color='k',label='F-P',lw=2)
+    #axs[1,0].plot(p1_b502[idx:,0],p1_b502[idx:,2],color='k',ls='--',lw=2)
 
     idx = np.argmax(p1_b505[:,0])
     axs[0,1].plot(p1_b505[:idx,0],p1_b505[:idx,1]*100,
@@ -660,6 +656,7 @@ def steady_states():
                   color='tab:blue')
 
     ### plot agents peak idxs
+    # D
     ze_list = np.round(np.arange(0.1,11,.2),1)
     mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.02)
     axs[1,0].plot(ze_list,mfpt_peak_idxs[:,0],
@@ -672,7 +669,10 @@ def steady_states():
                         marker='D',markevery=5,markersize=6,alpha=.75,
                         color='tab:orange')
 
+    # E
     mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.05)
+    
+
     axs[1,1].plot(ze_list,mfpt_peak_idxs[:,0],
                         marker='*',markevery=2,markersize=10,alpha=.75,
                         label='Agents',color='tab:orange')
@@ -683,8 +683,12 @@ def steady_states():
                         marker='D',markevery=2,markersize=6,alpha=.75,
                         color='tab:orange')
 
+    # F
     ze_list = np.round(np.arange(0.1,4,.2),1)
     mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.1)
+    #print('ze,peakidxs,')
+    #for ii,jj in zip(ze_list,mfpt_peak_idxs[:,0]):
+    #    print(ii,jj)
     axs[1,2].plot(ze_list,mfpt_peak_idxs[:,0],
                         marker='*',markevery=1,markersize=10,alpha=.75,
                         label='Agents',color='tab:orange')
@@ -712,7 +716,7 @@ def steady_states():
 
         axs[j,0].legend()
 
-        axs[j,0].set_ylabel('QSS Index')
+        axs[j,0].set_ylabel('$D$')
 
         
 
@@ -741,6 +745,473 @@ def steady_states():
     plt.tight_layout()
     
     return fig
+                                
+
+
+def collect(x,y,zs=None,use_nonan=True,lwstart=2.,lwend=2.,zorder=1.,cmapmax=1.,cmapmin=0.,cmap='viridis'):
+    """
+    add desired line properties
+    """
+    x = np.real(x)
+    y = np.real(y)
+    
+    x_nonan = x[(~np.isnan(x))*(~np.isnan(y))]
+    y_nonan = y[(~np.isnan(x))*(~np.isnan(y))]
+    
+    if use_nonan:
+        points = np.array([x_nonan, y_nonan]).T.reshape(-1, 1, 2)
+    else:
+        points = np.array([x, y]).T.reshape(-1, 1, 2)
+
+
+    lwidths = np.linspace(lwstart,lwend,len(x_nonan))
+
+    cmap = plt.get_cmap(cmap)
+    #my_cmap = truncate_colormap(cmap,gshift/ga[-1],cmapmax)
+    my_cmap = truncate_colormap(cmap,cmapmin,cmapmax)
+
+    
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    lc = LineCollection(segments, linewidths=lwidths,cmap=my_cmap, norm=plt.Normalize(zs.min(), zs.max()),zorder=zorder)
+    
+    #points = np.array([x, y]).T.reshape(-1, 1, 2)
+    #segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    
+    #lc = LineCollection(segments, cmap=plt.get_cmap('copper'),
+    #                    linewidths=1+np.linspace(0,1,len(x)-1)
+    #                    #norm=plt.Normalize(0, 1)
+    #)
+    
+    #lc.set_array(np.sqrt(x**2+y**2))
+    lc.set_array(zs)
+    
+    return lc
+
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
+    #http://stackoverflow.com/questions/18926031/how-to-extract-a-subset-of-a-colormap-as-a-new-colormap-in-matplotlib
+    new_cmap = colors.LinearSegmentedColormap.from_list(
+        'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),
+        cmap(np.linspace(minval, maxval, n)))
+    return new_cmap
+
+
+def steady_states_complete():
+    
+    fig, axs = plt.subplots(2,3,figsize=(8,5))
+
+
+    collect_kws = dict(lwstart=1,lwend=4,zorder=10)
+    
+    # plot fp peak idxs
+    #p1_b501 = np.loadtxt('data/diagram_b=5.01_1par.dat')
+    p1_b502 = np.loadtxt('data/diagram_b=5.02_1par.dat')
+    p1_b505 = np.loadtxt('data/diagram_b=5.05_1par.dat')
+    p1_b51 = np.loadtxt('data/diagram_b=5.1_1par.dat')
+
+    # decorate fp with stable and unstable
+    idx = np.argmax(p1_b502[:,0])
+    #p1, = axs[0,0].plot(p1_b502[:idx,0],p1_b502[:idx,1],
+    #                    color='gray',label='F-P',lw=2)
+    #p2, = axs[0,0].plot(p1_b502[idx:,0],p1_b502[idx:,1],
+    #                    color='gray',ls='--',lw=2)
+
+    # manually define stable line
+    N=100;al=14;be=126
+    n_eq = N*al/(al+be)
+    
+    ########### 5.02 (A,D)
+    zes = p1_b502[:,0]
+    y = p1_b502[:idx,1]
+    x = np.ones(len(y))*n_eq
+    z = zes
+
+    # off-diagonal curve
+    line = axs[0,0].add_collection(collect(x,y,z,**collect_kws))
+    line = axs[0,0].add_collection(collect(y,x,z,**collect_kws))
+
+    # on-diagonal curve
+    dat = np.loadtxt('ode/bif_b=5.02_fixed.dat')
+    skip_first = 0
+    x_mid = dat[skip_first:,1]*100; y_mid = x_mid; z_mid = dat[skip_first:,0]
+    axs[0,0].add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[1,0].add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    #axs[0,0].plot(x_mid,y_mid,z_mid,zorder=10)
+
+    fig.colorbar(line, ax=axs[0,0], label=r'$\zeta$ (\si{kg/s})')
+
+    # plot master peak idxs (A)
+    ze_list_m = np.round(np.arange(0.1,20,.1),1)
+    mfpt_peaks, mfpt_peak_idxs = get_master_peak_idxs(ze_list_m,B=5.02)
+    p3, = axs[0,0].plot(mfpt_peak_idxs[:,0],mfpt_peak_idxs[:,2],
+                        marker='*',markevery=10,markersize=10,alpha=.75,
+                        color='tab:blue',label='Master')
+    p4, = axs[0,0].plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                        marker='X',markevery=10,markersize=7,alpha=.75,
+                        color='tab:blue')
+    p5, = axs[0,0].plot(mfpt_peak_idxs[:,2],mfpt_peak_idxs[:,0],
+                        marker='D',markevery=10,markersize=6,alpha=.75,
+                        color='tab:blue')
+    
+    # inset to show middle branch for FP
+    x1, x2, y1, y2 = 7.5, 8.5, 7.5, 8.5  # subregion of the original image
+    axins00 = axs[0,0].inset_axes(
+        [0.02, 0.02, 0.4, 0.4],
+        xlim=(x1, x2), ylim=(y1, y2), xticklabels=[], yticklabels=[],xticks=[],yticks=[])
+    axins00.add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[0,0].indicate_inset_zoom(axins00, edgecolor="black")
+
+    axins00.plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                 marker='X',markevery=10,markersize=7,alpha=.75,
+                 color='tab:blue')
+
+    # plot agents peak idxs (D)
+    ze_list = np.round(np.arange(0.1,11,.2),1)
+    mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.02)
+    axs[1,0].plot(mfpt_peak_idxs[:,0],mfpt_peak_idxs[:,2],
+                        marker='*',markevery=4,markersize=10,alpha=.75,
+                        label='Agents',color='tab:orange')
+    axs[1,0].plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                        marker='X',markevery=4,markersize=7,alpha=.75,
+                        color='tab:orange')
+    axs[1,0].plot(mfpt_peak_idxs[:,2],mfpt_peak_idxs[:,0],
+                        marker='D',markevery=4,markersize=6,alpha=.75,
+                        color='tab:orange')
+
+    
+    # inset to show middle branch for FP
+    x1, x2, y1, y2 = 7.5, 8.5, 7.5, 8.5  # subregion of the original image
+    axins10 = axs[1,0].inset_axes(
+        [0.02, 0.02, 0.4, 0.4],
+        xlim=(x1, x2), ylim=(y1, y2), xticklabels=[], yticklabels=[],xticks=[],yticks=[])
+    axins10.add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[1,0].indicate_inset_zoom(axins10, edgecolor="black")
+
+    axins10.plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                 marker='X',markevery=4,markersize=7,alpha=.75,
+                 color='tab:orange')
+
+    # off-diagonal
+    line = axs[1,0].add_collection(collect(x,y,z,**collect_kws))
+    line = axs[1,0].add_collection(collect(y,x,z,**collect_kws))
+
+    fig.colorbar(line, ax=axs[1,0], label=r'$\zeta$ (\si{kg/s})')
+
+
+    ############## 5.05 (B,E)
+    idx = np.argmax(p1_b505[:,0])
+    zes = p1_b505[:,0]
+    y = p1_b505[:idx,1]*100
+    x = np.ones(len(y))*n_eq
+    z = zes
+
+    # off-diagonal curve
+    line = axs[0,1].add_collection(collect(x,y,z,**collect_kws))
+    line = axs[0,1].add_collection(collect(y,x,z,**collect_kws))
+    
+    # on-diagonal curve
+    dat = np.loadtxt('ode/bif_b=5.05_fixed.dat')
+    skip_first = 0
+    x_mid = dat[skip_first:,1]*100; y_mid = x_mid; z_mid = dat[skip_first:,0]
+    axs[0,1].add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[1,1].add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    #axs[0,0].plot(x_mid,y_mid,z_mid,zorder=10)
+
+    fig.colorbar(line, ax=axs[0,1], label=r'$\zeta$ (\si{kg/s})')
+    
+
+    line = axs[1,1].add_collection(collect(x,y,z,**collect_kws))
+    line = axs[1,1].add_collection(collect(y,x,z,**collect_kws))
+
+    fig.colorbar(line, ax=axs[1,1], label=r'$\zeta$ (\si{kg/s})')
+
+    
+    # plot master peak idxs (B)
+    ze_list_m = np.round(np.arange(0.1,20,.1),1)
+    mfpt_peaks, mfpt_peak_idxs = get_master_peak_idxs(ze_list_m,B=5.05)
+    p3, = axs[0,1].plot(mfpt_peak_idxs[:,0],mfpt_peak_idxs[:,2],
+                        marker='*',markevery=10,markersize=10,alpha=.75,
+                        color='tab:blue',label='Master')
+    p4, = axs[0,1].plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                        marker='X',markevery=10,markersize=7,alpha=.75,
+                        color='tab:blue')
+    p5, = axs[0,1].plot(mfpt_peak_idxs[:,2],mfpt_peak_idxs[:,0],
+                        marker='D',markevery=10,markersize=6,alpha=.75,
+                        color='tab:blue')
+    
+    # inset to show middle branch for FP
+    x1, x2, y1, y2 = 7.5, 8.5, 7.5, 8.5  # subregion of the original image
+    axins01 = axs[0,1].inset_axes(
+        [0.02, 0.02, 0.4, 0.4],
+        xlim=(x1, x2), ylim=(y1, y2), xticklabels=[], yticklabels=[],xticks=[],yticks=[])
+    axins01.add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[0,1].indicate_inset_zoom(axins01, edgecolor="black")
+
+    axins01.plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                 marker='X',markevery=10,markersize=7,alpha=.75,
+                 color='tab:blue')
+
+    
+    # plot agents peak idxs (E)
+    ze_list = np.round(np.arange(0.1,11,.2),1)
+    mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.05)
+    axs[1,1].plot(mfpt_peak_idxs[:,0],mfpt_peak_idxs[:,2],
+                        marker='*',markevery=4,markersize=10,alpha=.75,
+                        label='Agents',color='tab:orange')
+    axs[1,1].plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                        marker='X',markevery=4,markersize=7,alpha=.75,
+                        color='tab:orange')
+    axs[1,1].plot(mfpt_peak_idxs[:,2],mfpt_peak_idxs[:,0],
+                        marker='D',markevery=4,markersize=6,alpha=.75,
+                        color='tab:orange')
+
+    # inset to show middle branch for FP
+    x1, x2, y1, y2 = 7.5, 8.5, 7.5, 8.5  # subregion of the original image
+    axins11 = axs[1,1].inset_axes(
+        [0.02, 0.02, 0.4, 0.4],
+        xlim=(x1, x2), ylim=(y1, y2), xticklabels=[], yticklabels=[],xticks=[],yticks=[])
+    axins11.add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[1,1].indicate_inset_zoom(axins11, edgecolor="black")
+
+    axins11.plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                 marker='X',markevery=4,markersize=7,alpha=.75,
+                 color='tab:orange')
+
+
+    ############## 5.1 (C,F)
+    idx = np.argmax(p1_b51[:,0])
+    
+    y = p1_b51[idx:,1][::-1]
+    zes = p1_b51[idx:,0][::-1]
+    x = np.ones(len(y))*n_eq
+    z = zes
+
+    # off-diagonal curve
+    line = axs[0,2].add_collection(collect(x,y,z,**collect_kws))
+    line = axs[0,2].add_collection(collect(y,x,z,**collect_kws))
+
+    # on-diagonal curve
+    dat = np.loadtxt('ode/bif_b=5.1_fixed.dat')
+    skip_first = 0
+    x_mid = dat[skip_first:,1]*100; y_mid = x_mid; z_mid = dat[skip_first:,0]
+    axs[0,2].add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[1,2].add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    #axs[0,0].plot(x_mid,y_mid,z_mid,zorder=10)
+
+
+    fig.colorbar(line, ax=axs[0,2], label=r'$\zeta$ (\si{kg/s})')
+
+    line = axs[1,2].add_collection(collect(x,y,z,**collect_kws))
+    line = axs[1,2].add_collection(collect(y,x,z,**collect_kws))
+
+    fig.colorbar(line, ax=axs[1,2], label=r'$\zeta$ (\si{kg/s})')
+
+    # plot master peak idxs (C)
+    ze_list_m = np.round(np.arange(0.1,20,.1),1)
+    mfpt_peaks, mfpt_peak_idxs = get_master_peak_idxs(ze_list_m,B=5.1)
+    p3, = axs[0,2].plot(mfpt_peak_idxs[:,0],mfpt_peak_idxs[:,2],
+                        marker='*',markevery=10,markersize=10,alpha=.75,
+                        color='tab:blue',label='Master')
+    p4, = axs[0,2].plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                        marker='X',markevery=10,markersize=7,alpha=.75,
+                        color='tab:blue')
+    p5, = axs[0,2].plot(mfpt_peak_idxs[:,2],mfpt_peak_idxs[:,0],
+                        marker='D',markevery=10,markersize=6,alpha=.75,
+                        color='tab:blue')
+
+    
+    # inset to show middle branch for FP
+    x1, x2, y1, y2 = 7.9, 8.01, 7.9, 8.01  # subregion of the original image
+    axins02 = axs[0,2].inset_axes(
+        [0.02, 0.02, 0.4, 0.4],
+        xlim=(x1, x2), ylim=(y1, y2), xticklabels=[], yticklabels=[],xticks=[],yticks=[])
+    axins02.add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[0,2].indicate_inset_zoom(axins02, edgecolor="black")
+
+    axins02.plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                 marker='X',markevery=10,markersize=7,alpha=.75,
+                 color='tab:blue')
+
+    
+    # plot agents peak idxs (F)
+    ze_list = np.round(np.arange(0.1,11,.2),1)
+    mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.1)
+    axs[1,2].plot(mfpt_peak_idxs[:,0],mfpt_peak_idxs[:,2],
+                        marker='*',markevery=4,markersize=10,alpha=.75,
+                        label='Agents',color='tab:orange')
+    axs[1,2].plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                        marker='X',markevery=4,markersize=7,alpha=.75,
+                        color='tab:orange')
+    axs[1,2].plot(mfpt_peak_idxs[:,2],mfpt_peak_idxs[:,0],
+                        marker='D',markevery=4,markersize=6,alpha=.75,
+                        color='tab:orange')
+    
+
+
+    # inset to show middle branch for FP
+    x1, x2, y1, y2 = 7.9, 8.02, 7.9, 8.02  # subregion of the original image
+    axins12 = axs[1,2].inset_axes(
+        [0.02, 0.02, 0.4, 0.4],
+        xlim=(x1, x2), ylim=(y1, y2), xticklabels=[], yticklabels=[],xticks=[],yticks=[])
+    axins12.add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
+    axs[1,2].indicate_inset_zoom(axins12, edgecolor="black")
+
+    axins12.plot(mfpt_peak_idxs[:,1],mfpt_peak_idxs[:,1],
+                 marker='X',markevery=4,markersize=7,alpha=.75,
+                 color='tab:orange')
+
+    
+    #axs[0,0].legend([(p1,p2),(p3,p4,p5)],['F-P','Master'],
+    #                handler_map={tuple:HandlerTuple(ndivide=None)})
+
+    
+    
+    #axs[0,0].plot(const,y,color='gray',label='F-P',lw=2)
+    #axs[0,0].plot(y,const,color='gray',label='F-P',lw=2)
+    
+    #axs[1,0].plot(p1_b502[idx:,0],p1_b502[idx:,1],color='gray',ls='--',lw=2)
+
+    """
+    #axs[1,0].plot(p1_b502[:idx,0],p1_b502[:idx,2],color='k',label='F-P',lw=2)
+    #axs[1,0].plot(p1_b502[idx:,0],p1_b502[idx:,2],color='k',ls='--',lw=2)
+
+    idx = np.argmax(p1_b505[:,0])
+    axs[0,1].plot(p1_b505[:idx,0],p1_b505[:idx,1]*100,
+                  color='gray',label='F-P',lw=2)
+    axs[0,1].plot(p1_b505[idx:,0],p1_b505[idx:,1]*100,
+                  color='gray',ls='--',lw=2)
+
+    axs[1,1].plot(p1_b505[:idx,0],p1_b505[:idx,1]*100,
+                  color='gray',label='F-P',lw=2)
+    axs[1,1].plot(p1_b505[idx:,0],p1_b505[idx:,1]*100,
+                  color='gray',ls='--',lw=2)
+
+    idx = np.argmax(p1_b51[:,0])
+    axs[0,2].plot(p1_b51[idx:,0],p1_b51[idx:,1],color='gray',label='F-P',lw=2)
+    axs[0,2].plot(p1_b51[:idx,0],p1_b51[:idx,1],color='gray',ls='--',lw=2)
+
+    axs[1,2].plot(p1_b51[idx:,0],p1_b51[idx:,1],color='gray',label='F-P',lw=2)
+    axs[1,2].plot(p1_b51[:idx,0],p1_b51[:idx,1],color='gray',ls='--',lw=2)
+
+    #ze_list_m = np.round(np.arange(0.1,5,.1),1)
+    mfpt_peaks, mfpt_peak_idxs = get_master_peak_idxs(ze_list_m,B=5.05)
+    axs[0,1].plot(ze_list_m,mfpt_peak_idxs[:,0],
+                  marker='*',markevery=5,markersize=10,alpha=.75,
+                  color='tab:blue',label='Master')
+    axs[0,1].plot(ze_list_m,mfpt_peak_idxs[:,1],
+                  marker='X',markevery=5,markersize=7,alpha=.75,
+                  color='tab:blue')
+    axs[0,1].plot(ze_list_m,mfpt_peak_idxs[:,2],
+                  marker='D',markevery=5,markersize=6,alpha=.75,
+                  color='tab:blue')
+
+    #ze_list_m = np.round(np.arange(0.0,2,.1),1)
+    mfpt_peaks, mfpt_peak_idxs = get_master_peak_idxs(ze_list_m,B=5.1)
+    axs[0,2].plot(ze_list_m,mfpt_peak_idxs[:,0],
+                  marker='*',markevery=2,markersize=10,alpha=.75,
+                  color='tab:blue',label='Master')
+    axs[0,2].plot(ze_list_m,mfpt_peak_idxs[:,1],
+                  marker='X',markevery=2,markersize=7,alpha=.75,
+                  color='tab:blue')
+    axs[0,2].plot(ze_list_m,mfpt_peak_idxs[:,2],
+                  marker='D',markevery=2,markersize=6,alpha=.75,
+                  color='tab:blue')
+
+    ### plot agents peak idxs
+    # D
+    ze_list = np.round(np.arange(0.1,11,.2),1)
+    mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.02)
+    axs[1,0].plot(ze_list,mfpt_peak_idxs[:,0],
+                        marker='*',markevery=5,markersize=10,alpha=.75,
+                        label='Agents',color='tab:orange')
+    axs[1,0].plot(ze_list,mfpt_peak_idxs[:,1],
+                        marker='X',markevery=5,markersize=7,alpha=.75,
+                        color='tab:orange')
+    axs[1,0].plot(ze_list,mfpt_peak_idxs[:,2],
+                        marker='D',markevery=5,markersize=6,alpha=.75,
+                        color='tab:orange')
+
+    # E
+    mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.05)
+    
+
+    axs[1,1].plot(ze_list,mfpt_peak_idxs[:,0],
+                        marker='*',markevery=2,markersize=10,alpha=.75,
+                        label='Agents',color='tab:orange')
+    axs[1,1].plot(ze_list,mfpt_peak_idxs[:,1],
+                        marker='X',markevery=2,markersize=7,alpha=.75,
+                        color='tab:orange')
+    axs[1,1].plot(ze_list,mfpt_peak_idxs[:,2],
+                        marker='D',markevery=2,markersize=6,alpha=.75,
+                        color='tab:orange')
+
+    # F
+    ze_list = np.round(np.arange(0.1,4,.2),1)
+    mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.1)
+    #print('ze,peakidxs,')
+    #for ii,jj in zip(ze_list,mfpt_peak_idxs[:,0]):
+    #    print(ii,jj)
+    axs[1,2].plot(ze_list,mfpt_peak_idxs[:,0],
+                        marker='*',markevery=1,markersize=10,alpha=.75,
+                        label='Agents',color='tab:orange')
+    axs[1,2].plot(ze_list,mfpt_peak_idxs[:,1],
+                        marker='X',markevery=1,markersize=7,alpha=.75,
+                        color='tab:orange')
+    axs[1,2].plot(ze_list,mfpt_peak_idxs[:,2],
+                        marker='D',markevery=1,markersize=6,alpha=.75,
+                        color='tab:orange')
+
+    
+
+    """
+    xhi1 = np.amax(p1_b502[:,0])+np.amax(p1_b502[:,0])/10
+    xhi2 = np.amax(p1_b505[:,0])+np.amax(p1_b505[:,0])/10
+    xhi3 = np.amax(p1_b51[:,0])+np.amax(p1_b51[:,0])/10
+    
+
+    yhi = n_eq + n_eq/5.5
+
+
+    for j in range(2):
+        axs[j,0].set_xlim(0,yhi)
+        axs[j,1].set_xlim(0,yhi)
+        axs[j,2].set_xlim(0,yhi)
+
+        axs[j,0].set_ylim(0,yhi)
+        axs[j,1].set_ylim(0,yhi)
+        axs[j,2].set_ylim(0,yhi)
+
+        axs[j,0].legend()
+    
+        axs[j,0].set_ylabel('$D$')
+
+        
+
+    nr,nc = np.shape(axs)
+
+    count = 0
+    for i in range(nr):
+        
+        for j in range(nc):
+            axs[i,j].set_title(labels[count],loc='left')
+            axs[i,j].set_xlabel('$U$')
+            axs[i,j].yaxis.set_major_locator(MaxNLocator(integer=True))
+
+            count += 1
+
+
+    titles = [[r'$B=\SI{5.02}{nm}$',r'$B=\SI{5.05}{nm}$',r'$B=\SI{5.1}{nm}$'],
+              [r'$B=\SI{5.02}{nm}$',r'$B=\SI{5.05}{nm}$',r'$B=\SI{5.1}{nm}$']]
+    for i in range(nr):
+        for j in range(nc):
+            t1 = axs[i,j].get_title()
+            lab = t1 + titles[i][j]
+            axs[i,j].set_title(lab)
+
+
+    plt.tight_layout()
+
+    return fig
+
 
 def load_v_switch_pars(pars_and_ranges,recompute=False):
 
@@ -1435,16 +1906,21 @@ def generate_figure(function, args, filenames, bbox=False, dpi=MY_DPI):
 
 
 def main():
+
+    # create figs directory if it doesn't exist
+    if not(os.path.isdir('figs')):
+        os.mkdir('figs')
         
     # listed in order of Figures in paper (usually...)
     figures = [
-        (vel_fig,[],['figs/f_vel.pdf']),
+        #(vel_fig,[],['figs/f_vel.pdf']),
         #(dv_fig,[],['figs/dv.pdf']),
         #(v_switch_mfpt,[],['figs/f_v_switch_mfpt.pdf']),
         #(fp_steady,[],['figs/f_fp_steady.png','figs/f_fp_steady.pdf']),
         
         #(steady_state_examples,[],['figs/f_ss_examples.pdf']),
         #(steady_states,[],['figs/f_ss.png','figs/f_ss.pdf']),
+        (steady_states_complete,[],['figs/f_ss.png','figs/f_ss_complete.pdf']),
         #(v_switch_pars,[],['figs/f_v_switch_pars.pdf']),
         
         #(domain,[],['figs/f_domain.pdf']),
