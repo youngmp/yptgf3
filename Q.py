@@ -574,7 +574,13 @@ def get_mfpt(x_idxs,y_idxs,p,Qt):
         else:
             mfpt = mfpt2
             I = I2; J = J2
-
+            
+    elif len(x_idxs) == 5:
+        # typically 1 middle peak and a pair of 2 flanking peaks.
+        # assume no flanking peaks for now
+        mfpt = 0
+        I = -1; J = -1
+        
 
     else:
         raise ValueError('Invalid length in x_idxs',x_idxs,y_idxs)

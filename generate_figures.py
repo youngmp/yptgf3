@@ -6,6 +6,7 @@ import Q
 import telegraph
 from lubrication import lubrication
 
+import matplotlib.gridspec as gridspec
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -54,6 +55,194 @@ labels = list(string.ascii_uppercase)
 for i in range(len(labels)):
     labels[i] = r'\textbf{{{}}}'.format(labels[i])
 
+
+
+
+class Arrow3D(FancyArrowPatch):
+    """
+    A class for drawing arrows in 3d plots.
+    """
+
+    def __init__(self, xs, ys, zs, *args, **kwargs):
+        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
+        self._verts3d = xs, ys, zs
+    
+    def do_3d_projection(self, renderer=None):
+        xs3d, ys3d, zs3d = self._verts3d
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, self.axes.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+
+        return np.min(zs)
+
+    def draw(self, renderer):
+        xs3d, ys3d, zs3d = self._verts3d
+        #xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, self.axes.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+        FancyArrowPatch.draw(self, renderer)
+
+def cylinder_motors():
+    
+    T1 = .1
+    
+    gs = gridspec.GridSpec(nrows=1,ncols=2,wspace=-.1,hspace=.5)
+    fig = plt.figure(figsize=(6,3))
+    ax11 = fig.add_subplot(gs[0],projection='3d')
+    ax22 = fig.add_subplot(gs[1])
+    #ax11 = axs[0]
+    #ax22 = axs[1]
+    ax11.set_aspect('equal')
+    ax22.set_aspect('equal')
+    
+    
+    a = lubrication(phi1=.57,Rp=0.96,Rc=1.22,base_radius=1.22,
+                    pi3=1,pi4=4.7,pi5=0.1,pi6=10,
+                    mu=1.2,T=T1,constriction='piecewise',U0=0.2,
+                    dt=0.02,eps=1,
+                    F0=50,method='euler')
+    a.Z0 = -5/a.Rp
+    
+    z = np.linspace(-7,7,100)  # dimensional
+    r = a.pi1(z)
+    th = np.linspace(0,2*np.pi,100)
+    
+    
+    radius_al = 0.25
+    
+    # draw arrow going into spine
+    
+    ar1 = Arrow3D([0,0],[0,0],[-5,-1],
+                  mutation_scale=10, 
+                  lw=2, arrowstyle="-|>", color="k")
+    
+    ax11.add_artist(ar1)
+
+    # A
+    # draw spine
+    Z,TH = np.meshgrid(z,th)
+    #Z,TH = np.mgrid[-7:7:.1, 0:2*np.pi:.1]
+    X = np.zeros_like(Z)
+    Y = np.zeros_like(Z)
+    #print(np.shape(Z))
+    
+    for i in range(len(Z[:,0])):
+        X[i,:] = a.pi1(Z[i,:])*np.cos(TH[i,:])
+        Y[i,:] = a.pi1(Z[i,:])*np.sin(TH[i,:])
+    
+    ax11.plot_surface(X,Y,Z,alpha=.25)
+    
+    shifts = np.array([3,-3,0])
+    names = ['X','Y','Z']
+    size = 2
+    
+    
+    for i in range(3):
+        coords = np.zeros((3,2))
+        
+        coords[:,0] += shifts
+        coords[:,1] += shifts
+        
+        coords[i][1] += size
+        arx = Arrow3D(*list(coords),
+                      mutation_scale=5, 
+                      lw=2, arrowstyle="-|>", color="k")
+    
+        ax11.text(*list(coords[:,1]),names[i],horizontalalignment='center')
+    
+        ax11.add_artist(arx)
+        
+    
+
+    # draw sphere for cap
+    b = a.base_radius
+    r = np.sqrt(b**2+7**2)
+    th2 = np.linspace(0,np.arctan(b/7),100)
+    phi = np.linspace(0,2*np.pi,100)
+    
+    TH2,PHI = np.meshgrid(th2,phi)
+    X = r*np.sin(TH2)*np.cos(PHI)
+    Y = r*np.sin(TH2)*np.sin(PHI)
+    Z = r*np.cos(TH2)
+    ax11.plot_surface(X,Y,Z,color='tab:blue',alpha=.5)
+
+    
+    # draw sphere vesicle
+    u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+    X = np.cos(u)*np.sin(v)
+    Y = np.sin(u)*np.sin(v)
+    Z = np.cos(v)
+    ax11.plot_surface(X,Y,Z,color='gray',alpha=.5)
+    
+    # label spine head and base
+    ax11.text(2.7,-5.5,6,r'\setlength{\parindent}{0pt}Spine Head\\(Closed End)')
+    ax11.text(2.5,-5.5,-7,r'\setlength{\parindent}{0pt}Spine Base\\(Open End)')    
+    
+    # C
+    # draw molecular motors
+    
+    pad = .15
+    ax22.fill(a.Rp*np.cos(th),a.Rp*np.sin(th),color='gray',alpha=.5)
+    
+    ax22.plot([a.Rc+pad,a.Rc+pad],[-2,2],color='tab:blue',alpha=.5)
+    ax22.plot([-a.Rc-pad,-a.Rc-pad],[-2,2],color='tab:blue',alpha=.5)
+    
+    ax22.text(0,0,'Vesicle',ha='center',va='center')
+    ax22.text(-a.Rc-3*pad,0,'Spine Wall',rotation=90)
+    
+    ax22.annotate(r'$Z$',xy=(a.Rp,0),xytext=(a.Rc+4*pad,0),
+                  ha='center',va='center',rotation=-90,
+                  arrowprops=dict(arrowstyle='-|>',
+                                  color='k',lw=1),annotation_clip=False)
+    
+    # draw axes
+    shift = .75
+    x_center, y_center = (-1.5,-1.5)
+
+    ax22.annotate(r'X,Y', xy=(x_center,y_center),
+                  xytext=(x_center+shift,y_center),
+                  va='center',
+                  arrowprops=dict(mutation_scale=5, 
+                                  arrowstyle='<|-', 
+                                  color='k',lw=2),
+                  annotation_clip=False)
+    
+    ax22.annotate(r'Z', xy=(x_center,y_center),
+                  xytext=(x_center,y_center+shift),
+                  ha='center', 
+                  arrowprops=dict(mutation_scale=5,
+                                  arrowstyle='<|-',
+                                  color='k',lw=2),
+                  annotation_clip=False)
+    
+    
+    ax11.set_title(r'\textbf{A} Idealized Spine Geometry',loc='left')
+    ax22.set_title(r'\textbf{B} Longitudinal Cross-section',loc='left')
+    
+    
+    ax11.set_axis_off()
+    ax22.set_axis_off()
+    
+    ax22.set_xticks([])
+    ax22.set_yticks([])
+    
+    lo = -4.4
+    hi = 4.4
+    dx = -.5
+    
+    ax11.set_xlim(lo-dx,hi+dx)
+    ax11.set_ylim(lo-dx,hi+dx)
+    ax11.set_zlim(lo,hi)
+    
+    #ax22.set_xlim(-1.4,1.4)
+    #ax22.set_ylim(-1.4-pad,1.4+pad)
+    
+    ax11.view_init(20,45)
+    #fig.align_titles([ax11,ax22])
+    #fig.align_titles()
+    
+    #plt.tight_layout()
+    
+    return fig
 
 
 def dv_err(pdict):
@@ -249,6 +438,21 @@ def v_switch_mfpt():
     ze_bif = np.zeros(len(B_list))
     
     for j,B in enumerate(B_list):
+    
+         
+        if B == 5.02:
+            ze_list_a = np.round(np.arange(0.1,ze_max,.2),1)
+            ze_list_a2 = np.round(np.arange(0.1,ze_max,.2),1)
+            ze_list_m = np.round(np.arange(0.1,ze_max,.2),1)
+        elif B == 5.05:
+            ze_list_a = np.round(np.arange(.2,7.2,.2),1)
+            ze_list_a2 = np.round(np.arange(.2,7.2,.2),1)
+            ze_list_m = np.round(np.arange(.1,7.2,.1),1)
+        elif B == 5.05:
+            ze_list_a = np.round(np.arange(0.,7.2,.2),1)
+            ze_list_a2 = np.round(np.arange(0.,7.2,.2),1)
+            ze_list_m = np.round(np.arange(0.,7.2,.2),1)
+
 
         # get z value given b
         idx = np.argmin(np.abs(p2[:,1]-B))
@@ -282,6 +486,7 @@ def v_switch_mfpt():
                     mfpt_temp += np.loadtxt(fname.format(A,B,al,be,ze,k))
                     seed_count += 1
                 except IOError:
+                    print('file missing,', fname.format(A,B,al,be,ze,k))
                     pass
             
             mfpt = mfpt_temp/seed_count
@@ -450,15 +655,25 @@ def steady_state_examples():
     n_eq = N*al/(al+be)
 
     # needs to be dropbox path which might change based on the computer....
-    
-    #home = os.path.expanduser('~')
-    home = 'D:'
-    print("warning: HOME DIRECTORY IS ASSUMED TO BE",home)
+    # try different paths, default to local (since people are most likely to have downloaded this from the repo)
+    homes = ['./agents_hist/',os.path.expanduser('~')+'Dropbox/data/agents_hist/','D:/Dropbox/data/agents_hist/',
+             'E:/Dropbox/data/agents_hist/']
     Bs = str(B)
 
+    
+    file_not_found = True
+    count = 0
+    while file_not_found:
+        
+        home = homes[count]
+        if os.path.isfile(fname):
+            file_not_found = False
+        count += 1
+    
+    fname = home+'master_hist_T=10.0_A=5_B='+Bs+'_al=14_be=126_ze={}_seed={}.txt'
     ## agents steady state
     # despite the name, this is the histogram for agents
-    fname = home+'/Dropbox/data/agents_hist/master_hist_T=10.0_A=5_B='+Bs+'_al=14_be=126_ze={}_seed={}.txt'
+    
 
     mattot = np.zeros((100,100))
 
@@ -837,7 +1052,7 @@ def steady_states_complete():
     axs[1,0].add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
     #axs[0,0].plot(x_mid,y_mid,z_mid,zorder=10)
 
-    fig.colorbar(line, ax=axs[0,0], label=r'$\zeta$ (\si{kg/s})')
+    fig.colorbar(line, ax=axs[0,0], label=r'$\zeta$ (\si{mg/s})')
 
     # plot master peak idxs (A)
     ze_list_m = np.round(np.arange(0.1,20,.1),1)
@@ -894,7 +1109,7 @@ def steady_states_complete():
     line = axs[1,0].add_collection(collect(x,y,z,**collect_kws))
     line = axs[1,0].add_collection(collect(y,x,z,**collect_kws))
 
-    fig.colorbar(line, ax=axs[1,0], label=r'$\zeta$ (\si{kg/s})')
+    fig.colorbar(line, ax=axs[1,0], label=r'$\zeta$ (\si{mg/s})')
 
 
     ############## 5.05 (B,E)
@@ -916,13 +1131,13 @@ def steady_states_complete():
     axs[1,1].add_collection(collect(x_mid,y_mid,z_mid,**collect_kws))
     #axs[0,0].plot(x_mid,y_mid,z_mid,zorder=10)
 
-    fig.colorbar(line, ax=axs[0,1], label=r'$\zeta$ (\si{kg/s})')
+    fig.colorbar(line, ax=axs[0,1], label=r'$\zeta$ (\si{mg/s})')
     
 
     line = axs[1,1].add_collection(collect(x,y,z,**collect_kws))
     line = axs[1,1].add_collection(collect(y,x,z,**collect_kws))
 
-    fig.colorbar(line, ax=axs[1,1], label=r'$\zeta$ (\si{kg/s})')
+    fig.colorbar(line, ax=axs[1,1], label=r'$\zeta$ (\si{mg/s})')
 
     
     # plot master peak idxs (B)
@@ -998,12 +1213,12 @@ def steady_states_complete():
     #axs[0,0].plot(x_mid,y_mid,z_mid,zorder=10)
 
 
-    fig.colorbar(line, ax=axs[0,2], label=r'$\zeta$ (\si{kg/s})')
+    fig.colorbar(line, ax=axs[0,2], label=r'$\zeta$ (\si{mg/s})')
 
     line = axs[1,2].add_collection(collect(x,y,z,**collect_kws))
     line = axs[1,2].add_collection(collect(y,x,z,**collect_kws))
 
-    fig.colorbar(line, ax=axs[1,2], label=r'$\zeta$ (\si{kg/s})')
+    fig.colorbar(line, ax=axs[1,2], label=r'$\zeta$ (\si{mg/s})')
 
     # plot master peak idxs (C)
     ze_list_m = np.round(np.arange(0.1,20,.1),1)
@@ -1392,7 +1607,7 @@ def v_switch_pars():
         pname1 = pars_and_ranges['par1']
         pname2 = pars_and_ranges['par2']
 
-        X, Y, mfpt_mat = load_v_switch_pars(pars_and_ranges,recompute=True)
+        X, Y, mfpt_mat = load_v_switch_pars(pars_and_ranges,recompute=False)
         
         #mfpt_mat = load_cleaned_mfpt_mat(pars_and_ranges,mfpt_mat,recompute=False)
         
@@ -1410,7 +1625,7 @@ def v_switch_pars():
     
         cb = plt.colorbar(im,ax=axs[i])
         axs[i].set_title(labels[i],loc='left')
-        cb.set_label('log(Time to Switch Velocity)')
+        cb.set_label('log[(Time to Switch Velocity)/$T_0$]')
         
         if i > 0:
             # set all x-axis limits for zeta x-axes to [.1,7]
@@ -1480,7 +1695,7 @@ def get_mfpt_pars():
         pname1 = pars_and_ranges['par1']
         pname2 = pars_and_ranges['par2']
 
-        X, Y, mfpt_mat = load_v_switch_pars(pars_and_ranges,recompute=True)
+        X, Y, mfpt_mat = load_v_switch_pars(pars_and_ranges,recompute=False)
 
         mfpt_mat = load_cleaned_mfpt_mat(pars_and_ranges,mfpt_mat)
 
@@ -1711,7 +1926,7 @@ def mfpt(L):
     cb1 = plt.colorbar(im0[0],ax=axs[0,:])
     cb2 = plt.colorbar(im1[0],ax=axs[1,:])
     cb1.set_label('log(Probability)')
-    cb2.set_label('log(MFPT)')
+    cb2.set_label('log(MFPT/T_0)')
 
     
     
@@ -1913,6 +2128,8 @@ def main():
         
     # listed in order of Figures in paper (usually...)
     figures = [
+        #(cylinder_motors,[],['figs/f_cylinder_motors.pdf']),
+
         #(vel_fig,[],['figs/f_vel.pdf']),
         #(dv_fig,[],['figs/dv.pdf']),
         #(v_switch_mfpt,[],['figs/f_v_switch_mfpt.pdf']),
@@ -1920,12 +2137,12 @@ def main():
         
         #(steady_state_examples,[],['figs/f_ss_examples.pdf']),
         #(steady_states,[],['figs/f_ss.png','figs/f_ss.pdf']),
-        (steady_states_complete,[],['figs/f_ss.png','figs/f_ss_complete.pdf']),
-        #(v_switch_pars,[],['figs/f_v_switch_pars.pdf']),
+        (v_switch_pars,[],['figs/f_v_switch_pars.pdf']),
+        #(steady_states_complete,[],['figs/f_ss.png','figs/f_ss_complete.pdf']),
         
         #(domain,[],['figs/f_domain.pdf']),
-        #(mfpt,[200],['figs/f_mfpt_200.pdf']),
-        #(mfpt,[1000],['figs/f_mfpt_1000.pdf'])
+        (mfpt,[200],['figs/f_mfpt_200.pdf']),
+        (mfpt,[1000],['figs/f_mfpt_1000.pdf'])
     ]
     
     for fig in figures:

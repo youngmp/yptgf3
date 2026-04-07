@@ -19,7 +19,7 @@ import os
 import time
 import numpy as np
 import scipy as sp
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 import argparse
 
@@ -229,9 +229,10 @@ def calculate_mfpt_only(i,j,p1,p2,pname1,pname2,**kwargs):
     out = Q.get_local_idxs_v2(mat,pars,**kwargs) # 1 2 or 3 pairs
     x_idxs = out[:,0]
     y_idxs = out[:,1]
-
     
-    if False:
+    print('out i,j',i,j,pname1,np.round(p1,3),pname2,np.round(p2,3),out,mat[x_idxs,y_idxs])
+    
+    if False and ((i>=157) and (j<=19)):
         fig,axs = plt.subplots()
         axs.imshow(mat)
         axs.scatter(x_idxs,y_idxs)
@@ -241,7 +242,7 @@ def calculate_mfpt_only(i,j,p1,p2,pname1,pname2,**kwargs):
 
     mfpt,I,J = Q.get_mfpt(x_idxs,y_idxs,pars,Qt)
 
-    print('i,j',i,j,'mfpt,I,J',mfpt,I,J,'x,y',x_idxs,y_idxs,pname1,pname2,p1,p2)
+    #print('i,j',i,j,'mfpt,I,J',mfpt,I,J,'x,y',x_idxs,y_idxs,pname1,pname2,p1,p2)
 
     return i,j,mfpt
 
