@@ -2128,19 +2128,18 @@ def main():
         
     # listed in order of Figures in paper (usually...)
     figures = [
-        #(cylinder_motors,[],['figs/f_cylinder_motors.pdf']),
+        (cylinder_motors,[],['figs/f_cylinder_motors.pdf']),
 
-        #(vel_fig,[],['figs/f_vel.pdf']),
-        #(dv_fig,[],['figs/dv.pdf']),
-        #(v_switch_mfpt,[],['figs/f_v_switch_mfpt.pdf']),
-        #(fp_steady,[],['figs/f_fp_steady.png','figs/f_fp_steady.pdf']),
+        (vel_fig,[],['figs/f_vel.pdf']),
+        (dv_fig,[],['figs/dv.pdf']),
+        (v_switch_mfpt,[],['figs/f_v_switch_mfpt.pdf']),
         
-        #(steady_state_examples,[],['figs/f_ss_examples.pdf']),
-        #(steady_states,[],['figs/f_ss.png','figs/f_ss.pdf']),
+        (steady_state_examples,[],['figs/f_ss_examples.pdf']),
+        (steady_states,[],['figs/f_ss.png','figs/f_ss.pdf']),
         (v_switch_pars,[],['figs/f_v_switch_pars.pdf']),
-        #(steady_states_complete,[],['figs/f_ss.png','figs/f_ss_complete.pdf']),
+        (steady_states_complete,[],['figs/f_ss.png','figs/f_ss_complete.pdf']),
         
-        #(domain,[],['figs/f_domain.pdf']),
+        (domain,[],['figs/f_domain.pdf']),
         (mfpt,[200],['figs/f_mfpt_200.pdf']),
         (mfpt,[1000],['figs/f_mfpt_1000.pdf'])
     ]
