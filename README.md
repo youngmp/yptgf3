@@ -1,4 +1,4 @@
-<a href="https://doi.org/10.5281/zenodo.19457798"><img src="https://zenodo.org/badge/1182797857.svg" alt="DOI"></a>
+<a href="https://doi.org/10.5281/zenodo.19457798"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19544097.svg" alt="DOI"></a>
 
 dat should contain all necessary data files for figure generation. I apologize, it is very bloated -- there is on the order of 25MB of actual data spread across tens of thousands of small text files, which makes the file size on the order of gigabytes. I will make this repository more space-friendly if there is demand.
 
