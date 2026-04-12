@@ -785,6 +785,15 @@ def get_master_peak_idxs(ze_list,A=5,B=5.1,al=14,be=126):
 def steady_states():
 
     fig, axs = plt.subplots(2,3,figsize=(8,5))
+
+    
+    # manually add stable line
+    N=100;al=14;be=126
+    n_eq = N*al/(al+be)
+    #for i in range(3):
+    #    axs[0,i].plot([0,20],[n_eq,n_eq],color='gray',lw=2)
+    #    axs[1,i].plot([0,20],[n_eq,n_eq],color='gray',lw=2)
+
     
     # plot fp peak idxs
     #p1_b501 = np.loadtxt('data/diagram_b=5.01_1par.dat')
@@ -798,9 +807,50 @@ def steady_states():
                         color='gray',label='F-P',lw=2)
     p2, = axs[0,0].plot(p1_b502[idx:,0],p1_b502[idx:,1],
                         color='gray',ls='--',lw=2)
+    
+    # on-diagonal
+    dat = np.loadtxt('ode/bif_b=5.02_fixed.dat')
+    skip_first = 0
+    x_mid = dat[skip_first:,1]*100; y_mid = dat[skip_first:,1]; z_mid = dat[skip_first:,0]
+    axs[0,0].plot(z_mid,x_mid,color='gray',lw=2)
+    axs[1,0].plot(z_mid,x_mid,color='gray',lw=2)
+    #axs[0,0].plot(z_mid,y_mid)
+    
+    # horizontal:
+    #zes = p1_b502[:,0]
+    #x = np.ones(len(zes))*n_eq
+    #axs[0,0].plot(zes,x,color='gray',lw=2)
+    #axs[1,0].plot(zes,x,color='gray',lw=2)
+
+    axs[0,0].axhline(n_eq,color='gray',lw=2)
+    axs[1,0].axhline(n_eq,color='gray',lw=2)
+
+    axs[0,1].axhline(n_eq,color='gray',lw=2)
+    axs[1,1].axhline(n_eq,color='gray',lw=2)
+
+    axs[0,2].axhline(n_eq,color='gray',lw=2)
+    axs[1,2].axhline(n_eq,color='gray',lw=2)
+
+    
+    # on-diagonal
+    dat = np.loadtxt('ode/bif_b=5.05_fixed.dat')
+    skip_first = 0
+    x_mid = dat[skip_first:,1]*100; y_mid = dat[skip_first:,1]; z_mid = dat[skip_first:,0]
+    axs[0,1].plot(z_mid,x_mid,color='gray',lw=2)
+    axs[1,1].plot(z_mid,x_mid,color='gray',lw=2)
+
+    
+    # horizontal:
+    zes = p1_b505[:,0]
+    x = np.ones(len(zes))*n_eq
+    axs[0,1].plot(zes,x,color='gray',lw=2)
+    axs[1,1].plot(zes,x,color='gray',lw=2)
+
+
 
     axs[1,0].plot(p1_b502[:idx,0],p1_b502[:idx,1],color='gray',label='F-P',lw=2)
     axs[1,0].plot(p1_b502[idx:,0],p1_b502[idx:,1],color='gray',ls='--',lw=2)
+
 
     #axs[1,0].plot(p1_b502[:idx,0],p1_b502[:idx,2],color='k',label='F-P',lw=2)
     #axs[1,0].plot(p1_b502[idx:,0],p1_b502[idx:,2],color='k',ls='--',lw=2)
@@ -816,19 +866,13 @@ def steady_states():
     axs[1,1].plot(p1_b505[idx:,0],p1_b505[idx:,1]*100,
                   color='gray',ls='--',lw=2)
 
+
     idx = np.argmax(p1_b51[:,0])
     axs[0,2].plot(p1_b51[idx:,0],p1_b51[idx:,1],color='gray',label='F-P',lw=2)
     axs[0,2].plot(p1_b51[:idx,0],p1_b51[:idx,1],color='gray',ls='--',lw=2)
 
     axs[1,2].plot(p1_b51[idx:,0],p1_b51[idx:,1],color='gray',label='F-P',lw=2)
     axs[1,2].plot(p1_b51[:idx,0],p1_b51[:idx,1],color='gray',ls='--',lw=2)
-
-    # manually add stable line
-    N=100;al=14;be=126
-    n_eq = N*al/(al+be)
-    for i in range(3):
-        axs[0,i].plot([0,20],[n_eq,n_eq],color='gray',lw=2)
-        axs[1,i].plot([0,20],[n_eq,n_eq],color='gray',lw=2)
 
     # plot master peak idxs    
     ze_list_m = np.round(np.arange(0.1,20,.1),1)
@@ -857,6 +901,22 @@ def steady_states():
     axs[0,1].plot(ze_list_m,mfpt_peak_idxs[:,2],
                   marker='D',markevery=5,markersize=6,alpha=.75,
                   color='tab:blue')
+    
+
+
+
+    # on-diagonal
+    dat = np.loadtxt('ode/bif_b=5.1_fixed.dat')
+    skip_first = 0
+    x_mid = dat[skip_first:,1]*100; y_mid = dat[skip_first:,1]; z_mid = dat[skip_first:,0]
+    axs[0,2].plot(z_mid,x_mid,color='gray',lw=2)
+    axs[1,2].plot(z_mid,x_mid,color='gray',lw=2)
+    
+    # horizontal:
+    #zes = p1_b51[:,0]
+    #x = np.ones(len(zes))*n_eq
+    #axs[0,2].plot(zes,x,color='gray',lw=2)
+    #axs[1,2].plot(zes,x,color='gray',lw=2)
 
     #ze_list_m = np.round(np.arange(0.0,2,.1),1)
     mfpt_peaks, mfpt_peak_idxs = get_master_peak_idxs(ze_list_m,B=5.1)
@@ -884,6 +944,10 @@ def steady_states():
                         marker='D',markevery=5,markersize=6,alpha=.75,
                         color='tab:orange')
 
+
+
+
+    
     # E
     mfpt_peaks, mfpt_peak_idxs = get_agent_peak_idxs(ze_list,B=5.05)
     
@@ -913,11 +977,14 @@ def steady_states():
     axs[1,2].plot(ze_list,mfpt_peak_idxs[:,2],
                         marker='D',markevery=1,markersize=6,alpha=.75,
                         color='tab:orange')
+    
+
 
     xhi1 = np.amax(p1_b502[:,0])+np.amax(p1_b502[:,0])/10
     xhi2 = np.amax(p1_b505[:,0])+np.amax(p1_b505[:,0])/10
     xhi3 = np.amax(p1_b51[:,0])+np.amax(p1_b51[:,0])/10
 
+    
     yhi = n_eq + n_eq/5.5
 
     for j in range(2):
