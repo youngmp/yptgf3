@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/1182797857.svg)](https://doi.org/10.5281/zenodo.19457798)
+
 dat should contain all necessary data files for figure generation. I apologize, it is very bloated -- there is on the order of 25MB of actual data spread across tens of thousands of small text files, which makes the file size on the order of gigabytes. I will make this repository more space-friendly if there is demand.
 
 To obtain agent-based model simulations, I used agents.py on a cluster (HiPerGator) to run a bunch of simulations in parallel. See the folder slurm for examples of shell scripts used.
